@@ -3,31 +3,49 @@ package org.example;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class DinoGame extends JPanel implements ActionListener, KeyListener {
+public class DinoGame extends JPanel implements ActionListener {
     private int dinoX = 50, dinoY = 250, dinoWidth = 50, dinoHeight = 50;
     private int groundY = 300;
     private boolean jumping = false, falling = false;
-    private int jumpSpeed = 10, gravity = 2;
+    private int jumpSpeed = 15, gravity = 1;
     private int score = 0;
     private Timer timer;
     private ArrayList<Rectangle> obstacles;
     private Random rand = new Random();
+    private boolean gameOver = false;
 
     public DinoGame() {
         setPreferredSize(new Dimension(800, 400));
         setBackground(Color.WHITE);
-        addKeyListener(this);
         setFocusable(true);
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SPACE && !jumping && !falling) {
+                    jumping = true;
+                }
+                if (e.getKeyCode() == KeyEvent.VK_R && gameOver) {
+                    resetGame();
+                }
+            }
+        });
 
         obstacles = new ArrayList<>();
         timer = new Timer(20, this);
+        timer.start();
+    }
+
+    private void resetGame() {
+        dinoY = 250;
+        score = 0;
+        obstacles.clear();
+        jumping = false;
+        falling = false;
+        gameOver = false;
         timer.start();
     }
 
@@ -35,29 +53,33 @@ public class DinoGame extends JPanel implements ActionListener, KeyListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-
-        g.setColor(Color.BLACK);
+        // Yer chizish
+        g.setColor(new Color(100, 100, 100));
         g.fillRect(0, groundY, getWidth(), 5);
 
-
+        // Dino
         g.setColor(Color.BLUE);
         g.fillRect(dinoX, dinoY, dinoWidth, dinoHeight);
 
-
+        // To‘siqlar
         g.setColor(Color.RED);
         for (Rectangle obs : obstacles) {
             g.fillRect(obs.x, obs.y, obs.width, obs.height);
         }
 
-
+        // Score
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 20));
         g.drawString("Score: " + score, 650, 50);
-    }
 
-    public static void main(String[] args) {
-
-
+        // Game Over
+        if (gameOver) {
+            g.setColor(Color.RED);
+            g.setFont(new Font("Arial", Font.BOLD, 30));
+            g.drawString("GAME OVER!", 300, 200);
+            g.setFont(new Font("Arial", Font.BOLD, 20));
+            g.drawString("Press 'R' to Restart", 320, 250);
+        }
     }
 
     @Override
@@ -69,48 +91,45 @@ public class DinoGame extends JPanel implements ActionListener, KeyListener {
                 jumping = false;
                 falling = true;
             }
-            if (falling) {
-                dinoY += gravity * 2;
-                if (dinoY >= 250) {
-                    dinoY = 250;
-                    falling = false;
-                    jumpSpeed = 10;
-                }
-            }
-
-            for (int i = 0; i < obstacles.size(); i++) {
-                Rectangle obs = obstacles.get(i);
-                obs.x -= 5;
-                if (obs.x + obs.width < 0) {
-                    obstacles.remove(i);
-                    score++;
-                }
-                if (new Rectangle(dinoX, dinoY, dinoWidth, dinoHeight).intersects(obs)) {
-                    timer.stop();
-                    JOptionPane.showMessageDialog(this, "Game Over! Score: " + score);
-                    System.exit(0);
-                }
-            }
-            if (rand.nextInt(100) < 2) {
-                obstacles.add(new Rectangle(800, 275, 30, 30));
-            }
-
-            repaint();
         }
+
+        if (falling) {
+            dinoY += gravity * 2;
+            if (dinoY >= 250) {
+                dinoY = 250;
+                falling = false;
+                jumpSpeed = 15;
+            }
+        }
+
+        for (int i = 0; i < obstacles.size(); i++) {
+            Rectangle obs = obstacles.get(i);
+            obs.x -= 5;
+            if (obs.x + obs.width < 0) {
+                obstacles.remove(i);
+                score++;
+            }
+            if (new Rectangle(dinoX, dinoY, dinoWidth, dinoHeight).intersects(obs)) {
+                timer.stop();
+                gameOver = true;
+            }
+        }
+
+        if (rand.nextInt(100) < 2 && !gameOver) {
+            obstacles.add(new Rectangle(800, 275, 30, 30));
+        }
+
+        repaint();
     }
 
-    @Override
-    public void keyTyped(KeyEvent e) {
-
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Dino Chrome Game");
+        DinoGame game = new DinoGame();
+        frame.add(game);
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
     }
 }
+
