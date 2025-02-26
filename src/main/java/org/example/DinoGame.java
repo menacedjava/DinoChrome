@@ -53,26 +53,26 @@ public class DinoGame extends JPanel implements ActionListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // Yer chizish
+        
         g.setColor(new Color(100, 100, 100));
         g.fillRect(0, groundY, getWidth(), 5);
 
-        // Dino
+
         g.setColor(Color.BLUE);
         g.fillRect(dinoX, dinoY, dinoWidth, dinoHeight);
 
-        // To‘siqlar
+
         g.setColor(Color.RED);
         for (Rectangle obs : obstacles) {
             g.fillRect(obs.x, obs.y, obs.width, obs.height);
         }
 
-        // Score
+
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 20));
         g.drawString("Score: " + score, 650, 50);
 
-        // Game Over
+
         if (gameOver) {
             g.setColor(Color.RED);
             g.setFont(new Font("Arial", Font.BOLD, 30));
